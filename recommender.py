@@ -1,65 +1,63 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-import requests
-import json
-from scipy.sparse import *
 
-import Image
-import urllib, cStringIO
-import matplotlib.pyplot as plt
+from surprise import NormalPredictor
+from surprise import Dataset
+from surprise import Reader
+from surprise.model_selection import cross_validate
+from surprise import KNNBasic
 
-shape =  (53425 , 10001)
+shape =  (12001 , 10001)
 
-ratings = np.loadtxt(open('ratingsTable.csv' , 'rb') , delimiter=',' )
-print(ratings.shape)
+br_cols = ['book_id' , 'user_id' , 'rating']
+bookRatings = pd.read_csv('Data/ratings.csv' , sep=',' , names = br_cols , encoding='latin-1' , low_memory=False , skiprows=[0])
 
-"""
-def train_test_split(ratings):
-    test = np.zeros(shape)
-    train = ratings.copy()
-    for user in xrange(1,shape[0]+1):
-        test_ratings = np.random.choice(ratings[user, :].nonzero()[0],
-                                        size=10,
-                                        replace=False)
-        train[user, test_ratings] = 0.
-        test[user, test_ratings] = ratings[user, test_ratings]
+print(bookRatings.head())
 
+#print(ratings.head())
 
-train , test = train_test_split(ratings)
+b_cols = ['book_id' , 'books_count' , 'isbn' , 'isbn13' , 'authors' , 'original_publication_year' , 'original_title' , 'average_rating' , 'ratings_count' , 'image_url']
+books = pd.read_csv('Data/books.csv' , sep=',' , usecols=b_cols , encoding='latin-1' , low_memory = False)
 
-def fast_similarity(ratings, kind='user', epsilon=1e-9):
-    if kind == 'user':
-        sim = ratings.dot(ratings.T) + epsilon
-    elif kind == 'item':
-        sim = ratings.T.dot(ratings) + epsilon
-    norms = np.array([np.sqrt(np.diagonal(sim))])
-    print(norms.shape)
-    return (sim /(norms.dot(norms.T)))
+print(books.head())
+
+tr_cols = ['user_id' , 'book_id']
+to_read = pd.read_csv('Data/to_read.csv' , sep=',' , usecols=tr_cols , encoding='latin-1' , low_memory = False)
+#print(books.head())
+
+print(bookRatings.shape)
+print(books.shape)
+print(to_read.shape)
 
 
-user_similarity = fast_similarity(train, kind='user')
-print(user_similarity)
+bookRatings = bookRatings.drop_duplicates(['user_id' , 'book_id'] , 'first')
+bookRatings.groupby('user_id').filter(lambda x: len(x) >= 4)
+bookRatings = bookRatings[bookRatings['book_id']<=6000]
+print(bookRatings.shape)
+bookRatings = bookRatings.sample(60000)
+#print(bookRatings.iloc[6])
+print(bookRatings.shape)
 
-item_similarity = fast_similarity(train , kind='item')
-print(item_similarity.shape)
+
+reader = Reader(rating_scale=(1, 5) )
+data = Dataset.load_from_df(bookRatings , reader)
+
+trainingSet = data.build_full_trainset()
+print(trainingSet)
+sim_options = {
+
+'name': 'cosine',
+'user_based': False
+}
 
 
-def predict_fast_simple(ratings, similarity, kind='user'):
-    if kind == 'user':
-        return similarity.dot(ratings) / np.array([np.abs(similarity).sum(axis=1)]).T
-    elif kind == 'item':
-        return ratings.dot(similarity) / np.array([np.abs(similarity).sum(axis=1)])
+knn = KNNBasic(sim_options=sim_options)
 
-def get_mse(pred, actual):
-    pred = pred[actual.nonzero()].flatten()
-    actual = actual[actual.nonzero()].flatten()
-    return mean_squared_error(pred, actual)
+knn.fit(trainingSet)
 
-user_prediction = predict_fast_simple(train, user_similarity, kind='user')
-item_prediction = predict_fast_simple(train , item_similarity, kind='item')
 
-print 'User-based CF MSE: ' + str(get_mse(user_prediction, test))
-print 'Item-based CF MSE: ' + str(get_mse(item_prediction, test))
-"""
+testSet = trainingSet.build_anti_testset()
+predictions = knn.test(testSet)
+
+
+print(predictions)
