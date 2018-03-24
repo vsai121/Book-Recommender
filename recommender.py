@@ -6,6 +6,7 @@ from surprise import Dataset
 from surprise import Reader
 from surprise.model_selection import cross_validate
 from surprise import KNNBasic
+from surprise.accuracy import accuracy.mae
 
 shape =  (12001 , 10001)
 
@@ -32,9 +33,10 @@ print(to_read.shape)
 
 bookRatings = bookRatings.drop_duplicates(['user_id' , 'book_id'] , 'first')
 bookRatings.groupby('user_id').filter(lambda x: len(x) >= 4)
-bookRatings = bookRatings[bookRatings['book_id']<=6000]
+
 print(bookRatings.shape)
-bookRatings = bookRatings.sample(60000)
+
+bookRatings = bookRatings.sample(20000)
 #print(bookRatings.iloc[6])
 print(bookRatings.shape)
 
@@ -44,6 +46,8 @@ data = Dataset.load_from_df(bookRatings , reader)
 
 trainingSet = data.build_full_trainset()
 print(trainingSet)
+
+
 sim_options = {
 
 'name': 'cosine',
@@ -52,12 +56,9 @@ sim_options = {
 
 
 knn = KNNBasic(sim_options=sim_options)
-
 knn.fit(trainingSet)
-
 
 testSet = trainingSet.build_anti_testset()
 predictions = knn.test(testSet)
 
-
-print(predictions)
+print(accuracy.fcp(predictions))
