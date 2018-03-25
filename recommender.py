@@ -6,7 +6,8 @@ from surprise import Dataset
 from surprise import Reader
 from surprise.model_selection import cross_validate
 from surprise import KNNBasic
-from surprise.accuracy import accuracy.mae
+from surprise import accuracy
+from surprise.model_selection import train_test_split
 
 shape =  (12001 , 10001)
 
@@ -36,21 +37,17 @@ bookRatings.groupby('user_id').filter(lambda x: len(x) >= 4)
 
 print(bookRatings.shape)
 
-bookRatings = bookRatings.sample(20000)
-#print(bookRatings.iloc[6])
+bookRatings = bookRatings[bookRatings['user_id']<=5]
 print(bookRatings.shape)
 
 
 reader = Reader(rating_scale=(1, 5) )
 data = Dataset.load_from_df(bookRatings , reader)
 
-trainingSet = data.build_full_trainset()
-print(trainingSet)
-
+trainingSet, testSet = train_test_split(data, test_size=.15)
 
 sim_options = {
-
-'name': 'cosine',
+'name': 'pearson_baseline',
 'user_based': False
 }
 
@@ -58,7 +55,14 @@ sim_options = {
 knn = KNNBasic(sim_options=sim_options)
 knn.fit(trainingSet)
 
-testSet = trainingSet.build_anti_testset()
 predictions = knn.test(testSet)
 
-print(accuracy.fcp(predictions))
+print(predictions)
+
+from collections import defualtdict
+
+def get_topN_recommendations(predictions , topN=5):
+
+    top_recs = defualtdict(list)
+
+print(accuracy.rmse(predictions))
