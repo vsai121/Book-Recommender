@@ -9,6 +9,9 @@ from surprise import KNNBasic
 from surprise import accuracy
 from surprise.model_selection import train_test_split
 
+
+from collections import defaultdict
+
 shape =  (12001 , 10001)
 
 br_cols = ['book_id' , 'user_id' , 'rating']
@@ -37,7 +40,7 @@ bookRatings.groupby('user_id').filter(lambda x: len(x) >= 4)
 
 print(bookRatings.shape)
 
-bookRatings = bookRatings[bookRatings['user_id']<=5]
+bookRatings = bookRatings[bookRatings['user_id']<=15000]
 print(bookRatings.shape)
 
 
@@ -52,17 +55,55 @@ sim_options = {
 }
 
 
-knn = KNNBasic(sim_options=sim_options)
+knn = KNNBasic(k = 50 , min_k = 1 ,sim_options=sim_options)
 knn.fit(trainingSet)
 
 predictions = knn.test(testSet)
 
-print(predictions)
+#print(predictions)
 
-from collections import defualtdict
+#Prediction(uid=6727, iid=9476, r_ui=3.0, est=3.0, details={u'actual_k': 1, u'was_impossible': False}),
+
+print("Running the loop now \n")
+for bid , uid , rui , est , details in predictions:
+
+    if(details['was_impossible']==True):
+        continue
+
+    else:
+        if details['actual_k'] >=5 :
+
+            print(bid , uid , rui , est)
+
 
 def get_topN_recommendations(predictions , topN=5):
 
-    top_recs = defualtdict(list)
+    top_recs = defaultdict(list)
+
+    for uid, iid, true_r, est, details in predictions:
+
+
+         if(details['was_impossible']==False):
+             continue
+
+         top_recs[iid].append((uid, est))
+
+    for uid, user_ratings in top_recs.items():
+        user_ratings.sort(key = lambda x: x[1], reverse = True)
+        top_recs[iid] = user_ratings[:topN]
+
+
+    return top_recs
+
+
+top3_recommendations = get_topN_recommendations(predictions , topN=3)
+for uid, user_ratings in top3_recommendations.items():
+    for iid , _ in user_ratings:
+
+        print(iid , books.loc[uid]['original_title'])
+
+
+
+
 
 print(accuracy.rmse(predictions))
