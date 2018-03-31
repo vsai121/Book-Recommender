@@ -12,6 +12,7 @@ from surprise.model_selection import train_test_split
 
 from collections import defaultdict
 
+print("changed")
 shape =  (12001 , 10001)
 
 br_cols = ['book_id' , 'user_id' , 'rating']
@@ -39,9 +40,35 @@ print(to_read.shape)
 bookRatings = bookRatings.drop_duplicates(['user_id' , 'book_id'] , 'first')
 bookRatings.groupby('user_id').filter(lambda x: len(x) >= 4)
 
-print(bookRatings.shape)
+row_list=[]
 
-bookRatings = bookRatings[bookRatings['user_id']<=16000]
+for index,row in to_read.iterrows():
+
+    #print(row['user_id'])
+    #print(row['book_id'])
+    dict1={}
+
+
+    uid = int(row['user_id'])
+    bid = int(row['book_id'])
+
+    #print('User id' + str(uid))
+    #print('Book Id' + str(bid))
+
+    if bid < 10000:
+        avg_rating = books.loc[bid]['average_rating']
+        dict.update({'user_id':uid , 'book_id':bid , 'rating':avg_rating})
+
+        if uid <=50000:
+            row_list.append(dict1)
+
+        else:
+            break;
+
+df = pd.DataFrame(row_list)
+bookRatings.append(df , ignore_index = True)
+
+bookRatings = bookRatings[bookRatings['user_id']<=50000]
 print(bookRatings.shape)
 
 
@@ -54,11 +81,11 @@ data = Dataset.load_from_df(bookRatings , reader)
 trainingSet, testSet = train_test_split(data, test_size=.15)
 
 sim_options = {
-'name': 'pearson_baseline',
+'name': 'cosine',
 'user_based': False
 }
 
-knn = KNNBasic(k = 100 , min_k = 1 ,sim_options=sim_options)
+knn = KNNWithZScore(k = 100 , min_k = 1 ,sim_options=sim_options)
 knn.fit(trainingSet)
 
 predictions = knn.test(testSet)
@@ -120,7 +147,6 @@ cosine
 RMSE: 0.9069
 0.906855950284
 
-Pearson
 
 Pearson
 RMSE: 0.9257
@@ -130,6 +156,10 @@ pearson_baseline
 RMSE: 0.9134
 0.913366535973
 
+After implicit average_rating
+RMSE: 0.9142
+0.914248731719
+
 """
 
 """
@@ -138,6 +168,10 @@ ZScore
 Cosine
 RMSE: 0.8802
 0.880221480684
+
+After implicit
+RMSE: 0.8782
+0.878221157428
 
 Pearson
 RMSE: 0.9050
