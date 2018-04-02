@@ -10,11 +10,13 @@ from surprise import KNNBasic , KNNWithMeans , KNNWithZScore , KNNBaseline
 from surprise import accuracy
 from surprise.model_selection import train_test_split
 
+import scipy.sparse
+
 
 from collections import defaultdict
 
-print("changed")
-shape =  (12001 , 10001)
+print("changes done")
+
 
 br_cols = ['book_id' , 'user_id' , 'rating']
 bookRatings = pd.read_csv('Data/ratings.csv' , sep=',' , names = br_cols , encoding='latin-1' , low_memory=False , skiprows=[0])
@@ -41,37 +43,9 @@ print(to_read.shape)
 bookRatings = bookRatings.drop_duplicates(['user_id' , 'book_id'] , 'first')
 bookRatings.groupby('user_id').filter(lambda x: len(x) >= 4)
 
-"""
-row_list=[]
-
-for index,row in to_read.iterrows():
-
-    #print(row['user_id'])
-    #print(row['book_id'])
-    dict1={}
 
 
-    uid = int(row['user_id'])
-    bid = int(row['book_id'])
-
-    #print('User id' + str(uid))
-    #print('Book Id' + str(bid))
-
-    if bid < 10000:
-        avg_rating = books.loc[bid]['average_rating']
-        dict.update({'user_id':uid , 'book_id':bid , 'rating':avg_rating})
-
-        if uid <=50000:
-            row_list.append(dict1)
-
-        else:
-            break;
-
-df = pd.DataFrame(row_list)
-bookRatings.append(df , ignore_index = True)
-"""
-
-bookRatings = bookRatings[bookRatings['user_id']<=50000]
+bookRatings = bookRatings[bookRatings['user_id']<=53000]
 print(bookRatings.shape)
 
 
@@ -88,12 +62,16 @@ sim_options = {
 'user_based': False
 }
 
-knn = KNNWithZScore(k = 100 , min_k = 1 ,sim_options=sim_options)
+knn = KNNBasic(k = 100 , min_k = 3 ,sim_options=sim_options)
 
 knn.fit(trainingSet)
 sim = knn.sim
-print(sim)
+print(type(sim))
 
+sparse_matrix = scipy.sparse.csc_matrix(sim)
+scipy.sparse.save_npz('Data/sim.npz', sparse_matrix)
+
+"""
 predictions = knn.test(testSet)
 
 
@@ -108,7 +86,7 @@ for uid , bid , rui , est , details in predictions:
         continue
 
     else:
-        if details['actual_k'] >=15 :
+        if details['actual_k'] >=5 :
 
             print(uid , bid , rui , est)
 
@@ -122,7 +100,7 @@ def get_topN_recommendations(predictions , topN=5):
          if(details['was_impossible']==True):
              continue
 
-         if details['actual_k'] <=20:
+         if details['actual_k'] <=5:
              continue
 
          top_recs[uid].append((iid, est))
@@ -141,10 +119,17 @@ top3_recommendations = get_topN_recommendations(predictions , topN=3)
 for uid, user_ratings in top3_recommendations.items():
     for iid , _ in user_ratings:
 
-        print(uid , books.loc[iid]['original_title'])
+        print(uid , books.loc[iid-1]['original_title'])
 
 
 print(accuracy.rmse(predictions))
+
+"""
+
+
+
+
+
 
 """
 Basic
