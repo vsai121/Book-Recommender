@@ -11,11 +11,8 @@ from surprise.model_selection import train_test_split
 
 import scipy.sparse
 
-similarity = scipy.sparse.load_npz('Data/similarity.npz')
+sparseMatrix = scipy.sparse.load_npz('Data/simBaseline.npz')
 
-print(similarity[1,:])
-print("Hi")
-print(similarity[2,:])
-print(similarity[3,:])
+similarity = sparseMatrix.todense()
 
-print(similarity[2,84])
+print(np.count_nonzero(similarity==1))

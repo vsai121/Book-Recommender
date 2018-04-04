@@ -58,18 +58,20 @@ data = Dataset.load_from_df(bookRatings , reader)
 trainingSet, testSet = train_test_split(data, test_size=.15)
 
 sim_options = {
-'name': 'cosine',
-'user_based': False
+'name': 'pearson_baseline',
+'user_based': False,
+'min_support': 5
+
 }
 
-knn = KNNBasic(k = 100 , min_k = 3 ,sim_options=sim_options)
+knn = KNNBasic(k = 100 , min_k = 6 ,sim_options=sim_options)
 
 knn.fit(trainingSet)
 sim = knn.sim
 print(type(sim))
 
 sparse_matrix = scipy.sparse.csc_matrix(sim)
-scipy.sparse.save_npz('Data/sim.npz', sparse_matrix)
+scipy.sparse.save_npz('Data/simBaseline.npz', sparse_matrix)
 
 """
 predictions = knn.test(testSet)
