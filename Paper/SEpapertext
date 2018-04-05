@@ -1,0 +1,26 @@
+Abstract:
+
+Collaborative filtering is one of the most important technology in the market nowadays. Its prevalent in almost every aspect of the internet, in e-commerce, music, books, social media, advertising, etc. as it greatly grasps the needs of the user and provides a comfortable platform for user to find what they like without searching. This method has a few drawbacks, one of them being; it is based only on the explicit feedback given by the user in the form of a rating. The real needs of a user is also demonstrated by various implicit indicators such as views, read later lists, etc. This papers proposes, demonstrates and compares various techniques to include implicit ratings into the recommendation system. This paper also shows various ways in which minor tweaks can modify the performance of the algorithm. A weighted average of various item-item similarity without implicit ratings and explicit ratings are combined to generate explicit ratings for books the given user has not rated, which will be used to perform item-item collaborative filtering.
+
+Introduction:
+
+Recommender systems are a type of intelligent system which analyze past user behavior on items or service to make personalized recommendations on items to users. The two most widely used methods in recommendation systems are content based algorithms and collaborative filtering algorithms.
+Memory based methods – These are a set of methods which use the entire database (user-item database) to make a
+recommendation to a user. These methods can also be classified into two types Item based Collaborative Filtering – In this particular method, two items are compared and given a similarity score between the two using some sort of metric like the cosine distance, Pearson’s correlation, or Jaccard distance. A higher similarity score between two items indicates they are more similar . In most techniques, the similarity score usually ranges from 0 - 1 . Using this similarity score, active recommendations are made for a user.
+User based collaborative filtering – In this method, two users are compared for similarity and given a similarity score between them. The same metrics like cosine distance, Pearson’s correlation, or Jaccard distance are used here. Using the similarity scores between the users, active recommendations are made for a user.
+
+Content based filtering methods work by constructing a model to map a user to set of items using either explicit features like ratings or implicit features like search history or number of page views. They compares user preferences to item description to make their predictions.
+
+The need for improving recommendation quality is still critical. In this paper, we discuss one particular problem of recommender systems in general. There exists two types of data on which similarity can be calculated and recommendations can be provided. The first type is explicit data, which consists of data which user explicitly provide, in the form of ratings, or small surveys. This data is generally well understood as it provides a concrete understanding of user interests.
+
+The other type of data is implicit ratings, as the name suggests are the data which the user implicitly provides, through their actions on the platform, including but not restricted to page views, adding to wish lists, commenting on an item, etc. This type of data is generally vague and less understood, as the user does not provide a very clear indication of their preferences for that particular item.
+
+One of the major issues faced by recommender systems is the inclusion of implicit ratings in to the recommendation. Implicit ratings a very large percentage of the ratings, as the innate requirements of the user are expressed very openly in their online behavior. But due to the very vague and misunderstood nature of implicit data, it becomes a very tedious task to implement recommendation using implicit data.
+
+Also, the likelihood of the user rating an object is very small compared to the data recieved from studying browsing patterns of the users. Hence, it is essential to include implicit data to make predictions to vastly improve the quality of recommendations.
+
+In this paper, we discuss content based collaborative filtering for a book recommendation system and propose solutions to improve collaborative, item-item based filtering by using implicit data. The implicit data in this case is the list of books each user has marked for future reading, but has not rated explicitly. The same method can be extended to other implicit data.
+
+Literature Review:
+
+

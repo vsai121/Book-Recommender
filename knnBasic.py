@@ -15,7 +15,7 @@ import scipy.sparse
 
 from collections import defaultdict
 
-print("changes done")
+print("changes mfkr")
 
 
 br_cols = ['book_id' , 'user_id' , 'rating']
@@ -26,18 +26,10 @@ print(bookRatings.head())
 
 #print(ratings.head())
 
-b_cols = ['book_id' , 'books_count' , 'isbn' , 'isbn13' , 'authors' , 'original_publication_year' , 'original_title' , 'average_rating' , 'ratings_count' , 'image_url']
-books = pd.read_csv('Data/books.csv' , sep=',' , usecols=b_cols , encoding='latin-1' , low_memory = False)
 
-print(books.head())
 
-tr_cols = ['user_id' , 'book_id']
-to_read = pd.read_csv('Data/to_read.csv' , sep=',' , usecols=tr_cols , encoding='latin-1' , low_memory = False)
-#print(books.head())
 
 print(bookRatings.shape)
-print(books.shape)
-print(to_read.shape)
 
 
 bookRatings = bookRatings.drop_duplicates(['user_id' , 'book_id'] , 'first')
@@ -45,7 +37,7 @@ bookRatings.groupby('user_id').filter(lambda x: len(x) >= 4)
 
 
 
-bookRatings = bookRatings[bookRatings['user_id']<=53000]
+bookRatings = bookRatings[bookRatings['user_id']<=55000]
 print(bookRatings.shape)
 
 
@@ -55,12 +47,12 @@ data = Dataset.load_from_df(bookRatings , reader)
 #print(bookRatings.head(n=15))
 
 
-trainingSet, testSet = train_test_split(data, test_size=.15)
+trainingSet = data.build_full_trainset()
 
 sim_options = {
-'name': 'pearson_baseline',
+'name': 'cosine',
 'user_based': False,
-'min_support': 5
+'min_support': 3
 
 }
 
@@ -71,7 +63,7 @@ sim = knn.sim
 print(type(sim))
 
 sparse_matrix = scipy.sparse.csc_matrix(sim)
-scipy.sparse.save_npz('Data/simBaseline.npz', sparse_matrix)
+scipy.sparse.save_npz('Data/simCosine.npz', sparse_matrix)
 
 """
 predictions = knn.test(testSet)
