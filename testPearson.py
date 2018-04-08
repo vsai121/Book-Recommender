@@ -87,7 +87,7 @@ for row in to_read.iterrows():
         calcRating/=denum
         #print(calcRating)
         if calcRating!=0:
-            dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':randint(3,5)})
+            dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':calcRating})
             #print(dict1)
             rowlist.append(dict1)
             #print(rowlist)
