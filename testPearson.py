@@ -77,14 +77,15 @@ for row in to_read.iterrows():
             dist += (average_rating - rating)**2
             denum2+=1
 
-            if sim>0.5:
-                calcRating+= sim*rating
-                denum+=sim
+            
+            calcRating+= sim*(rating-average_rating)
+            denum+=sim
 
     if denum!=0:
         cnt+=1
         print(cnt)
         calcRating/=denum
+        calcRating+=average_rating
         #print(calcRating)
         if calcRating!=0:
             dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':calcRating})
@@ -96,7 +97,7 @@ for row in to_read.iterrows():
         if book_id <10000:
             dist/=denum2
             if dist<=0.5:
-                avg = books.loc[book_ID]['average_rating']
+                avg = books.loc[book_id]['average_rating']
                 dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':avg})
 
 
