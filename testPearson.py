@@ -13,12 +13,13 @@ import scipy.sparse
 
 from random import randint
 
-print("Finally working I guess pearson")
+print("Should work now")
 
-sparseMatrix = scipy.sparse.load_npz('Data/sim.npz')
+sparseMatrix = scipy.sparse.load_npz('Data/simCosine.npz')
 similarity = sparseMatrix.todense()
 
 userDict = np.load('Data/userDict.npy').item()
+bookDict = np.load('Data/bookDict.npy').item()
 
 b_cols = ['book_id' , 'books_count' , 'isbn' , 'isbn13' , 'authors' , 'original_publication_year' , 'original_title' , 'average_rating' , 'ratings_count' , 'image_url']
 books = pd.read_csv('Data/books.csv' , sep=',' , usecols=b_cols , encoding='latin-1' , low_memory = False)
@@ -54,39 +55,67 @@ for row in to_read.iterrows():
 
     calcRating=0
     denum=0
-    average_rating=0
-    denum2=0
-    dist = 0
+    chk=0
+
+
+
 
     if user_id != oldID:
         #print(user_id)
         List = userDict[user_id]
         oldID = user_id
+        chk=1
+        average_rating=0
+        denum2=0
+        dist = 0
+
+        rat = 0
+        avgRat=0.0
+        count=0
+
+
+
         #print(List)
 
     for item in List:
         compBookID = item[0]
         rating = item[1]
+        count+=1
         #print(user_id , book_id , compBookID)
+
+
+
 
         if book_id<10000 and compBookID <10000:
             sim = similarity[book_id , compBookID]
+            #print("compBookID" , compBookID)
+            #print("book_id" , book_id)
+
+            #print("Book starts here
+            #print("Average rating" , avgRat)
+            if chk==1:
+                for book in bookDict[compBookID]:
 
 
-            average_rating = books.loc[compBookID]['average_rating']
-            dist += (average_rating - rating)**2
-            denum2+=1
+                    rat+=book[1]
+                    count+=1
 
-            
-            calcRating+= sim*(rating-average_rating)
-            denum+=sim
+                    #print(book)
+                avgRat = rat/cnt
+                #print("average_rating" , average_rating)#print("rating" , rating)
+                dist += (avgRat - rating)**2
+                denum2+=1
+
+            if sim>0.7:
+                calcRating+= sim*(rating - avgRat)
+                denum+=sim
 
     if denum!=0:
         cnt+=1
         print(cnt)
         calcRating/=denum
-        calcRating+=average_rating
-        #print(calcRating)
+        calcRating+=avgRat
+        print("calcRating" , calcRating)
         if calcRating!=0:
             dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':calcRating})
             #print(dict1)
@@ -95,10 +124,12 @@ for row in to_read.iterrows():
 
     else:
         if book_id <10000:
-            dist/=denum2
-            if dist<=0.5:
+            avgDist = dist/denum2
+            print("Avergae distanece",avgDist)
+            if avgDist<=1:
                 avg = books.loc[book_id]['average_rating']
                 dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':avg})
+                rowlist.append(dict1)
 
 
 
@@ -109,4 +140,4 @@ bookRatings = bookRatings.append(df , ignore_index=True)
 
 print(bookRatings.shape)
 
-bookRatings.to_csv('Data/implicitRatingsPearson.csv' , sep=',')
+bookRatings.to_csv('Data/implicitRatingsCosine.csv' , sep=',')
