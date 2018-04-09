@@ -11,17 +11,24 @@ from surprise.model_selection import train_test_split
 
 import scipy.sparse
 
-print("Cosine pls work")
+from random import randint
+
+print("Should work now")
 
 sparseMatrix = scipy.sparse.load_npz('Data/simCosine.npz')
 similarity = sparseMatrix.todense()
 
 userDict = np.load('Data/userDict.npy').item()
 
+b_cols = ['book_id' , 'books_count' , 'isbn' , 'isbn13' , 'authors' , 'original_publication_year' , 'original_title' , 'average_rating' , 'ratings_count' , 'image_url']
+books = pd.read_csv('Data/books.csv' , sep=',' , usecols=b_cols , encoding='latin-1' , low_memory = False)
+
+
 tr_cols = ['user_id' , 'book_id']
 to_read = pd.read_csv('Data/to_read.csv' , sep=',' , usecols=tr_cols , encoding='latin-1' , low_memory = False)
 
 br_cols = ['book_id' , 'user_id' , 'rating']
+
 bookRatings = pd.read_csv('Data/ratings.csv' , sep=',' , names = br_cols , encoding='latin-1' , low_memory=False , skiprows=[0])
 bookRatings = bookRatings[['user_id' , 'book_id' , 'rating']]
 
@@ -47,13 +54,18 @@ for row in to_read.iterrows():
 
     calcRating=0
     denum=0
-    average_rating=0
-    denum2=0
+    chk=0
 
     if user_id != oldID:
         #print(user_id)
         List = userDict[user_id]
         oldID = user_id
+        chk=1
+        average_rating=0
+        denum2=0
+        dist = 0
+
+
         #print(List)
 
     for item in List:
@@ -63,13 +75,18 @@ for row in to_read.iterrows():
 
         if book_id<10000 and compBookID <10000:
             sim = similarity[book_id , compBookID]
+            #print("compBookID" , compBookID)
+            #print("book_id" , book_id)
+            if chk==1:
+                average_rating = books.loc[compBookID]['average_rating']
+                #print("average_rating" , average_rating)
+                #print("rating" , rating)
+                dist += (average_rating - rating)**2
+                denum2+=1
 
-            average_rating+=rating
-            denum2+=1
-
-            if sim>0.5:
+            if sim>0.7:
                 calcRating+= sim*rating
-                denum+=1
+                denum+=sim
 
     if denum!=0:
         cnt+=1
@@ -83,10 +100,15 @@ for row in to_read.iterrows():
             #print(rowlist)
 
     else:
-        if denum2!=0:
-            average_rating/=denum2
-            dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':average_rating})
-            rowlist.append(dict1)
+        if book_id <10000:
+            avgDist = dist/denum2
+            print(avgDist)
+            if avgDist<=1:
+                avg = books.loc[book_id]['average_rating']
+                dict1.update({'user_id':user_id , 'book_id':book_id , 'rating':avg})
+                rowlist.append(dict1)
+
+
 
 #print(rowlist)
 print("Saving now")
